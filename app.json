@@ -1,5 +1,5 @@
 {
-  "addons": ["heroku-postgresql:hobby-dev"],
+  "addons": ["jawsdb-maria:kitefin"],
   "buildpacks": [
     {
       "url": "https://github.com/richardhj/heroku-buildpack-contao"
@@ -8,8 +8,12 @@
       "url": "heroku/php"
     }
   ],
+  "env": {
+    "DATABASE_URL": {
+      "value": "$JAWSDB_MARIA_URL"
+    }
+  },
   "scripts": {
-    "postdeploy": "bin/bootstrap"
   },
   "success_url": "/contao"
 }
