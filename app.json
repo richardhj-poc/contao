@@ -1,0 +1,14 @@
+{
+  "addons": ["jawsdb-maria:kitefin"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/richardhj/heroku-buildpack-contao"
+    },
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "scripts": {
+  },
+  "success_url": "/contao"
+}
