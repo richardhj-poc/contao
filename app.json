@@ -8,11 +8,6 @@
       "url": "heroku/php"
     }
   ],
-  "env": {
-    "DATABASE_URL": {
-      "value": "$JAWSDB_MARIA_URL"
-    }
-  },
   "scripts": {
   },
   "success_url": "/contao"
