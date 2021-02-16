@@ -1,0 +1,15 @@
+{
+  "addons": ["heroku-postgresql:hobby-dev"],
+  "buildpacks": [
+    {
+      "url": "https://github.com/richardhj/heroku-buildpack-contao"
+    },
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "bin/bootstrap"
+  },
+  "success_url": "/contao"
+}
