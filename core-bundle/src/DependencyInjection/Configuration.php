@@ -454,6 +454,11 @@ class Configuration implements ConfigurationInterface
             ->getRootNode()
             ->addDefaultsIfNotSet()
             ->children()
+                ->scalarNode('route_prefix')
+                    ->info('Define the path of the Contao backend.')
+                    ->example('/admin')
+                    ->defaultValue('/contao')
+                ->end()
                 ->arrayNode('attributes')
                     ->info('Adds HTML attributes to the <body> tag in the back end.')
                     ->example(['data-app-name' => 'My App', 'data-app-version' => '1.2.3'])
@@ -473,6 +478,26 @@ class Configuration implements ConfigurationInterface
                     ->normalizeKeys(false)
                     ->useAttributeAsKey('name')
                     ->scalarPrototype()->end()
+                ->end()
+                ->scalarNode('theme')
+                    ->info('Set a backend theme for all users.')
+                    ->defaultNull()
+                ->end()
+                ->scalarNode('theme_path')
+                    ->info('Point to Encore\'s entrypoints.json of your custom backend theme.')
+                    ->validate()
+                    ->always(
+                        static function ($value) {
+                            if (!file_exists($value)) {
+                                throw new \InvalidArgumentException(sprintf('The file "%s" does not exist.', $value));
+                            }
+
+                            return $value;
+                        }
+                    )
+                    ->end()
+                    ->example('%kernel.project_dir%/web/layout/backend/entrypoints.json')
+                    ->defaultNull()
                 ->end()
                 ->arrayNode('custom_css')
                     ->info('Adds custom style sheets to the back end.')

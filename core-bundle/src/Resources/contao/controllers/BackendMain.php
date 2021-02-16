@@ -10,17 +10,22 @@
 
 namespace Contao;
 
+use Contao\CoreBundle\BackendTheme\BackendThemes;
 use Contao\CoreBundle\Exception\AccessDeniedException;
+use Contao\CoreBundle\Fragment\Reference\FragmentReference;
 use Contao\CoreBundle\Util\PackageUtil;
-use Knp\Bundle\TimeBundle\DateTimeFormatter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBagInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+
+trigger_deprecation('contao/core-bundle', '4.12', 'Using the "Contao\BackendMain" class has been deprecated and will no longer work in Contao 5.0.');
 
 /**
  * Main back end controller.
  *
  * @author Leo Feyer <https://github.com/leofeyer>
+ *
+ * @deprecated this controller was moved to the \Contao\CoreBundle\Controller\Backend namespace
  */
 class BackendMain extends Backend
 {
@@ -146,7 +151,7 @@ class BackendMain extends Backend
 		// Welcome screen
 		elseif (!Input::get('do') && !Input::get('act'))
 		{
-			$this->Template->main .= $this->welcomeScreen();
+			$this->Template->main .= $this->dashboard();
 			$this->Template->title = $GLOBALS['TL_LANG']['MSC']['dashboard'];
 		}
 		// Open a module
@@ -171,6 +176,24 @@ class BackendMain extends Backend
 		return $this->output();
 	}
 
+	private function dashboard(): string
+	{
+		$return = '';
+
+		$container = System::getContainer();
+
+		$fragmentHandler = $container->get('fragment.handler');
+
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.welcome_screen'));
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.dashboard_gantt'));
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.dashboard_create_wizard'));
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.dashboard_heatmap'));
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.dashboard_editions'));
+		$return .= $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.dashboard_actions'));
+
+		return $return;
+	}
+
 	/**
 	 * Add the welcome screen
 	 *
@@ -178,35 +201,12 @@ class BackendMain extends Backend
 	 */
 	protected function welcomeScreen()
 	{
-		System::loadLanguageFile('explain');
+		trigger_deprecation('contao/core-bundle', '4.12', 'Using BackendMain::welcomeScreen() has been deprecated.');
 
-		$objTemplate = new BackendTemplate('be_welcome');
-		$objTemplate->messages = Message::generateUnwrapped() . Backend::getSystemMessages();
-		$objTemplate->loginMsg = $GLOBALS['TL_LANG']['MSC']['firstLogin'];
+		$container = System::getContainer();
+		$fragmentHandler = $container->get('fragment.handler');
 
-		// Add the login message
-		if ($this->User->lastLogin > 0)
-		{
-			$formatter = new DateTimeFormatter(System::getContainer()->get('translator'));
-			$diff = $formatter->formatDiff(new \DateTime(date('Y-m-d H:i:s', $this->User->lastLogin)), new \DateTime());
-
-			$objTemplate->loginMsg = sprintf(
-				$GLOBALS['TL_LANG']['MSC']['lastLogin'][1],
-				'<time title="' . Date::parse(Config::get('datimFormat'), $this->User->lastLogin) . '">' . $diff . '</time>'
-			);
-		}
-
-		// Add the versions overview
-		Versions::addToTemplate($objTemplate);
-
-		$objTemplate->showDifferences = StringUtil::specialchars(str_replace("'", "\\'", $GLOBALS['TL_LANG']['MSC']['showDifferences']));
-		$objTemplate->recordOfTable = StringUtil::specialchars(str_replace("'", "\\'", $GLOBALS['TL_LANG']['MSC']['recordOfTable']));
-		$objTemplate->systemMessages = $GLOBALS['TL_LANG']['MSC']['systemMessages'];
-		$objTemplate->shortcuts = $GLOBALS['TL_LANG']['MSC']['shortcuts'][0];
-		$objTemplate->shortcutsLink = $GLOBALS['TL_LANG']['MSC']['shortcuts'][1];
-		$objTemplate->editElement = StringUtil::specialchars($GLOBALS['TL_LANG']['MSC']['editElement']);
-
-		return $objTemplate->parse();
+		return $fragmentHandler->render(new FragmentReference('contao.dashboard_widget.welcome_screen'));
 	}
 
 	/**
@@ -238,7 +238,9 @@ class BackendMain extends Backend
 			$this->Template->manager = (strpos($objSession->get('filePickerRef'), 'contao/page?') !== false) ? $GLOBALS['TL_LANG']['MSC']['pagePickerHome'] : $GLOBALS['TL_LANG']['MSC']['filePickerHome'];
 		}
 
-		$this->Template->theme = Backend::getTheme();
+		$themeName = Config::get('backendTheme') ?: Backend::getTheme();
+
+		$this->Template->theme = $themeName;
 		$this->Template->base = Environment::get('base');
 		$this->Template->language = $GLOBALS['TL_LANGUAGE'];
 		$this->Template->title = StringUtil::specialchars(strip_tags($this->Template->title));
@@ -253,7 +255,20 @@ class BackendMain extends Backend
 		$this->Template->menu = $twig->render('@ContaoCore/Backend/be_menu.html.twig');
 		$this->Template->headerMenu = $twig->render('@ContaoCore/Backend/be_header_menu.html.twig');
 
-		return $this->Template->getResponse();
+		$this->Template->localeString = $this->Template->getLocaleString();
+		$this->Template->dateString = $this->Template->getDateString();
+
+		$backendThemes = $container->get(BackendThemes::class);
+
+		if ('flexible' !== $themeName && null === $theme = $backendThemes->getTheme($themeName))
+		{
+			// Legacy theme detected.
+			return $this->Template->getResponse();
+		}
+
+		return $this->Template->getResponse()->setContent(
+			$twig->render('@ContaoCore/Backend/Layout/main.html.twig', $this->Template->getData())
+		);
 	}
 }
 

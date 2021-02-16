@@ -1,0 +1,10 @@
+@tailwind base;
+
+@import "_legacy.css";
+
+[x-cloak] {
+    @apply hidden;
+}
+
+@tailwind components;
+@tailwind utilities;

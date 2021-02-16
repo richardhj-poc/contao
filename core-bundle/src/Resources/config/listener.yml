@@ -36,6 +36,11 @@ services:
             - '@?event_dispatcher'
         public: true
 
+    Contao\CoreBundle\EventListener\DataContainer\BackendThemesOptionsListener:
+        arguments:
+            - '@Contao\CoreBundle\BackendTheme\BackendThemes'
+            - '%contao.backend%'
+
     Contao\CoreBundle\EventListener\DataContainer\PageUrlListener:
         arguments:
             - '@contao.framework'
@@ -333,6 +338,10 @@ services:
             - '@contao.routing.scope_matcher'
             - '@security.token_storage'
             - '%scheb_two_factor.security_tokens%'
+        tags:
+            - kernel.event_listener
+
+    Contao\CoreBundle\EventListener\BackendModuleControllerListener:
         tags:
             - kernel.event_listener
 

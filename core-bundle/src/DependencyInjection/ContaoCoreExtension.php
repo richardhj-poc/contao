@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Contao\CoreBundle\DependencyInjection;
 
+use Contao\CoreBundle\BackendTheme\BackendThemeInterface;
 use Contao\CoreBundle\Crawl\Escargot\Subscriber\EscargotSubscriberInterface;
 use Contao\CoreBundle\EventListener\SearchIndexListener;
 use Contao\CoreBundle\Migration\MigrationInterface;
@@ -83,6 +84,7 @@ class ContaoCoreExtension extends Extension
         $container->setParameter('contao.security.two_factor.enforce_backend', $config['security']['two_factor']['enforce_backend']);
         $container->setParameter('contao.localconfig', $config['localconfig'] ?? []);
         $container->setParameter('contao.backend', $config['backend']);
+        $container->setParameter('contao.backend.route_prefix', $config['backend']['route_prefix']);
 
         $this->handleSearchConfig($config, $container);
         $this->handleCrawlConfig($config, $container);
@@ -110,6 +112,11 @@ class ContaoCoreExtension extends Extension
         $container
             ->registerForAutoconfiguration(ContentCompositionInterface::class)
             ->addTag('contao.page')
+        ;
+
+        $container
+            ->registerForAutoconfiguration(BackendThemeInterface::class)
+            ->addTag('contao.backend_theme')
         ;
     }
 
