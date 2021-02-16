@@ -8,12 +8,8 @@
       "url": "heroku/php"
     }
   ],
-  "env": {
-    "DATABASE_URL": {
-      "value": "$JAWSDB_MARIA_URL"
-    }
-  },
   "scripts": {
+    "postdeploy": "php vendor/bin/contao-console contao:migrate --with-deletes --no-interaction",
   },
   "success_url": "/contao"
 }
