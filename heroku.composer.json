@@ -1,0 +1,27 @@
+{
+  "name": "contao/managed-edition",
+  "type": "project",
+  "require": {
+    "contao/contao": "*@dev"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "repo"
+    }
+  ],
+  "extra": {
+    "contao-component-dir": "assets",
+    "symfony": {
+      "require": "^5.2"
+    }
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "contao-setup --ansi"
+    ],
+    "post-update-cmd": [
+      "contao-setup --ansi"
+    ]
+  }
+}
