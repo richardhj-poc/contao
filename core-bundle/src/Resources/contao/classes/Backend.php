@@ -10,6 +10,7 @@
 
 namespace Contao;
 
+use Contao\CoreBundle\BackendTheme\BackendThemes;
 use Contao\CoreBundle\Exception\AccessDeniedException;
 use Contao\CoreBundle\Exception\ResponseException;
 use Contao\CoreBundle\Picker\PickerInterface;
@@ -63,24 +64,27 @@ abstract class Backend extends Controller
 	 * Return the back end themes as array
 	 *
 	 * @return array An array of available back end themes
+	 *
+	 * @deprecated Returns only legacy backend themes. To be removed in Contao 5.0.
+	 *             Use BackendThemes::getThemeNames() instead.
 	 */
 	public static function getThemes()
 	{
-		$arrReturn = array();
+		$retrurn = array();
 		$projectDir = System::getContainer()->getParameter('kernel.project_dir');
-		$arrThemes = Folder::scan($projectDir . '/system/themes');
+		$themes = Folder::scan($projectDir . '/system/themes');
 
-		foreach ($arrThemes as $strTheme)
+		foreach ($themes as $name)
 		{
-			if (strncmp($strTheme, '.', 1) === 0 || !is_dir($projectDir . '/system/themes/' . $strTheme))
+			if (0 === strncmp($name, '.', 1) || !is_dir($projectDir . '/system/themes/' . $name))
 			{
 				continue;
 			}
 
-			$arrReturn[$strTheme] = $strTheme;
+			$retrurn[$name] = $name;
 		}
 
-		return $arrReturn;
+		return $retrurn;
 	}
 
 	/**
